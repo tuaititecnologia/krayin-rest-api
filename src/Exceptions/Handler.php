@@ -2,119 +2,102 @@
 
 namespace Webkul\RestApi\Exceptions;
 
-use App\Exceptions\Handler as AppExceptionHandler;
 use Illuminate\Auth\AuthenticationException;
-use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Http\Request;
 use PDOException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
 
-class Handler extends AppExceptionHandler
+class Handler extends ExceptionHandler
 {
     /**
-     * Json error messages.
-     *
-     * @var array
+     * Register the exception handling callbacks for the application.
      */
-    protected $jsonErrorMessages = [];
+    public function register(): void
+    {
+        /**
+         * Suppress reporting, mirroring the previous no-op report() override.
+         */
+        $this->reportable(fn (Throwable $e) => false);
+
+        /**
+         * Always answer authentication failures with a JSON 401 for this API.
+         */
+        $this->renderable(function (AuthenticationException $e, Request $request) {
+            return response()->json([
+                'message' => $this->jsonErrorMessages()[401],
+            ], 401);
+        });
+
+        /**
+         * Render custom error responses when not running in debug mode.
+         */
+        $this->renderable(function (Throwable $e, Request $request) {
+            if (config('app.debug')) {
+                return null;
+            }
+
+            return $this->renderCustomResponse($e, $request);
+        });
+    }
 
     /**
-     * Create handler instance.
+     * Localized JSON error messages keyed by status code.
      *
-     * @return void
+     * @return array<int, string>
      */
-    public function __construct(Container $container)
+    protected function jsonErrorMessages(): array
     {
-        parent::__construct($container);
-
-        $this->jsonErrorMessages = [
-            '404' => trans('rest-api::app.common.resource-not-found'),
-            '403' => trans('rest-api::app.common.forbidden-error'),
-            '401' => trans('rest-api::app.common.unauthenticated'),
-            '500' => trans('rest-api::app.common.internal-server-error'),
+        return [
+            401 => trans('rest-api::app.common.unauthenticated'),
+            403 => trans('rest-api::app.common.forbidden-error'),
+            404 => trans('rest-api::app.common.resource-not-found'),
+            500 => trans('rest-api::app.common.internal-server-error'),
         ];
     }
 
     /**
-     * Render an exception into an HTTP response.
+     * Render a custom response for known exception types.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return \Symfony\Component\HttpFoundation\Response|null
      */
-    public function render($request, Throwable $exception)
-    {
-        if (! config('app.debug')) {
-            return $this->renderCustomResponse($exception);
-        }
-
-        return parent::render($request, $exception);
-    }
-
-    /**
-     * Report the exception.
-     *
-     * @return void
-     */
-    public function report(Throwable $exception)
-    {
-        //
-    }
-
-    /**
-     * Convert an authentication exception into a response.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    protected function unauthenticated($request, AuthenticationException $exception)
-    {
-        if ($request->expectsJson()) {
-            return response()->json(['message' => $this->jsonErrorMessages[401]], 401);
-        }
-
-        return redirect()->guest(route('customer.session.index'));
-    }
-
-    /**
-     * Render custom HTTP response.
-     *
-     * @return \Illuminate\Http\Response|null
-     */
-    private function renderCustomResponse(Throwable $exception)
+    protected function renderCustomResponse(Throwable $exception, Request $request)
     {
         if ($exception instanceof HttpException) {
             $statusCode = in_array($exception->getStatusCode(), [401, 403, 404, 503])
                 ? $exception->getStatusCode()
                 : 500;
 
-            return $this->response('admin', $statusCode);
+            return $this->response($request, $statusCode);
         }
 
         if ($exception instanceof ModelNotFoundException) {
-            return $this->response('admin', 404);
-        } elseif ($exception instanceof PDOException || $exception instanceof \ParseError) {
-            return $this->response('admin', 500);
+            return $this->response($request, 404);
         }
+
+        if ($exception instanceof PDOException || $exception instanceof \ParseError) {
+            return $this->response($request, 500);
+        }
+
+        return null;
     }
 
     /**
-     * Return custom response.
+     * Build the response for a given status code.
      *
-     * @param  string  $path
-     * @param  string  $statusCode
-     * @return mixed
+     * @return \Symfony\Component\HttpFoundation\Response
      */
-    private function response($path, $statusCode)
+    protected function response(Request $request, int $statusCode)
     {
-        if (request()->expectsJson()) {
+        if ($request->expectsJson()) {
             return response()->json([
-                'message' => isset($this->jsonErrorMessages[$statusCode])
-                    ? $this->jsonErrorMessages[$statusCode]
-                    : trans('admin::app.common.something-went-wrong'),
+                'message' => $this->jsonErrorMessages()[$statusCode]
+                    ?? trans('admin::app.common.something-went-wrong'),
             ], $statusCode);
         }
 
-        return response()->view("{$path}::errors.{$statusCode}", [], $statusCode);
+        return response()->view("admin::errors.{$statusCode}", [], $statusCode);
     }
 }

@@ -4,7 +4,9 @@ Krayin REST API is a medium to use the features of the core Krayin System. By us
 
 ## 1. Requirements
 
-* **Krayin**: v2.0.0
+* **Krayin**: v2.x (running on Laravel 12)
+* **PHP**: v8.2 or higher
+* **Laravel**: v12
 
 ## 2. Installation
 
