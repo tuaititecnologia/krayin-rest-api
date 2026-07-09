@@ -156,7 +156,24 @@ class PersonController extends Controller
     {
         $data = request()->all();
 
-        $data['contact_numbers'] = collect($data['contact_numbers'])->filter(fn ($number) => ! is_null($number['value']))->toArray();
+        // `contact_numbers` is optional: a person can be created with just an
+        // email and no phone. Krayin's PersonRepository indexes
+        // `contact_numbers[0]['value']` whenever the key is present, so passing
+        // an empty array (or omitting a `value`) makes core crash with an
+        // "Undefined array key" that, under production error handling, becomes a
+        // 500 instead of simply persisting a person without a phone. So keep the
+        // key only when there is at least one real number, and drop it entirely
+        // otherwise.
+        $numbers = collect($data['contact_numbers'] ?? [])
+            ->filter(fn ($number) => ! is_null($number['value'] ?? null))
+            ->values()
+            ->toArray();
+
+        if ($numbers) {
+            $data['contact_numbers'] = $numbers;
+        } else {
+            unset($data['contact_numbers']);
+        }
 
         return $data;
     }
