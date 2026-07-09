@@ -64,8 +64,11 @@ After executing the above command, you will see the API endpoint displayed in th
 ### Alternatively, you can check the API documentation by visiting the following URL in your browser
 
 ~~~shell
-http://localhost/public/api/admin/documentation
+http://localhost/api/documentation
 ~~~
+
+This matches the `l5-swagger` `routes.api` value and the URL printed by the
+install command (`{APP_URL}/api/documentation`).
 
 * You can check the [L5-Swagger](https://github.com/DarkaOnLine/L5-Swagger) guidelines too regarding the configuration the API documentation.
 

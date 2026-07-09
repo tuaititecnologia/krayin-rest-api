@@ -1,9 +1,10 @@
 # CHANGELOG
 This changelog consists of the bug & security fixes and new features being included in the releases listed below.
 
-## **Unreleased** - *Laravel 12 compatibility*
+## **v3.0.0 (8th of July 2026)** - *Laravel 12 support*
 
 * Added Laravel 12 support.
+* Added a lightweight PHPUnit test suite (Orchestra Testbench, no full Krayin CRM required) and a GitHub Actions CI matrix across PHP 8.2 / 8.3 / 8.4.
 * Bumped `darkaonline/l5-swagger` to `^9.0` (the first release line that supports Laravel 12) and added explicit `php: ^8.2` and `laravel/sanctum: ^4.0` constraints.
 * Migrated `Webkul\RestApi\Exceptions\Handler` off the removed `App\Exceptions\Handler` base class; it now extends `Illuminate\Foundation\Exceptions\Handler` and registers its custom rendering via the Laravel 11/12 `register()` / `renderable()` idiom.
 * Removed the `Illuminate\Foundation\Auth\SendsPasswordResetEmails` trait from `AuthController`. The trait was deleted in Laravel 11/12 and would fatally error (`Trait not found`) as soon as the controller loaded; it was unused, since `forgotPassword()` calls `Password::broker()->sendResetLink()` directly.
