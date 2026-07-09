@@ -28,6 +28,15 @@ infrastructure fixes each pattern once for the ~40 controllers:
   locales, and `DELETE` support on `mass-destroy` where the wrong verb was used.
 * Removed the dead singular route files (`setting-routes.php`,
   `activity-routes.php`) and added numeric `{id}` route constraints.
+* Added a migration that backfills the `expires_at` column on
+  `personal_access_tokens` for installs upgraded from a pre-Sanctum-4 schema
+  (Krayin's original 2.1.x scaffold never had it); safe no-op otherwise.
+* Registered `Authenticate::redirectUsing()` so a guest hitting any `api/*`
+  route always gets a clean JSON 401 instead of crashing with
+  `Route [login] not defined` (Krayin's admin panel has no named `login`
+  route reachable from the API guard). The exception handler's catch-all also
+  now always renders JSON for `api/*` requests, even in debug mode, so no
+  unmapped exception can leak an HTML debug trace to an API client.
 
 ## **v3.0.0 (8th of July 2026)** - *Laravel 12 support*
 

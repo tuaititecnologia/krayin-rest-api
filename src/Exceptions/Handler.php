@@ -65,14 +65,20 @@ class Handler extends ExceptionHandler
 
         /**
          * Any remaining exception: keep the framework's default (stack trace)
-         * while debugging, otherwise map known types to a clean JSON response.
+         * while debugging web/admin routes, but api/* requests always get a
+         * clean JSON response — an API consumer should never receive an HTML
+         * debug page or trace, regardless of APP_DEBUG.
          */
         $this->renderable(function (Throwable $e, Request $request) {
-            if (config('app.debug')) {
+            if (
+                config('app.debug')
+                && ! $request->is('api/*')
+            ) {
                 return null;
             }
 
-            return $this->renderCustomResponse($e, $request);
+            return $this->renderCustomResponse($e, $request)
+                ?? ($request->is('api/*') ? $this->jsonError(500) : null);
         });
     }
 
