@@ -1,10 +1,11 @@
 # Krayin REST API
 
 ![tests](https://github.com/tuaititecnologia/krayin-rest-api/actions/workflows/tests.yml/badge.svg)
+![integration](https://github.com/tuaititecnologia/krayin-rest-api/actions/workflows/integration.yml/badge.svg)
 
 Krayin REST API is a medium to use the features of the core Krayin System. By using Krayin REST API, you can integrate your application to serve the default content of Krayin.
 
-> **This is a community-maintained fork** modernizing the package for **Laravel 12**. It ships a test suite and CI so the project can be safely built on and evolved, while staying clean enough to merge back upstream. See [Testing](#3-testing) and [CHANGELOG.md](CHANGELOG.md).
+> **This is a community-maintained fork** modernizing the package for **Laravel 12**. It ships a test suite and CI so the project can be safely built on and evolved, while staying clean enough to merge back upstream. See [Usage](#3-usage), [Testing](#4-testing) and [CHANGELOG.md](CHANGELOG.md).
 
 ## 1. Requirements
 
@@ -90,7 +91,42 @@ install command (`{APP_URL}/api/documentation`).
   registered automatically in `RestApiServiceProvider::boot()`; no action
   needed on your end.
 
-## 3. Testing
+## 3. Usage
+
+The API is authenticated with [Laravel Sanctum](https://laravel.com/docs/sanctum) bearer tokens.
+
+### Get a token
+
+~~~shell
+curl -X POST {APP_URL}/api/v1/login \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@example.com","password":"secret","device_name":"my-app"}'
+~~~
+
+The response contains the authenticated user and a `token`. Send it as a bearer token on every subsequent request:
+
+~~~shell
+curl {APP_URL}/api/v1/leads \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer <token>"
+~~~
+
+> Always send `Accept: application/json` so errors come back as JSON (`401` unauthenticated, `404` not found, `422` validation) rather than an HTML page.
+
+### Some endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/api/v1/login` | Authenticate; returns a bearer token |
+| `GET` / `POST` | `/api/v1/leads` | List / create leads |
+| `GET` / `PUT` / `DELETE` | `/api/v1/leads/{id}` | Show / update / delete a lead |
+| `GET` / `POST` | `/api/v1/contacts/persons` | List / create persons |
+| `GET` / `POST` | `/api/v1/contacts/organizations` | List / create organizations |
+
+The full, always-current list — with request/response schemas — lives in the Swagger UI at `{APP_URL}/api/documentation`.
+
+## 4. Testing
 
 This package ships a fast, self-contained test suite built on [Orchestra Testbench](https://packages.tools/testbench). It boots the package inside a minimal Laravel 12 app — **no full Krayin CRM or database is required** — and verifies the surface the package owns and that the Laravel 12 upgrade touched: service-provider wiring, route registration, the `sanctum.admin` middleware, the custom exception handler's JSON contract, the OpenAPI attribute docs, the mass-action form requests, and the API resource transformers.
 
