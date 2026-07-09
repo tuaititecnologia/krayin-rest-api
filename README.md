@@ -1,7 +1,6 @@
 # Krayin REST API
 
-<!-- Replace OWNER/REPO with your fork's path once pushed to GitHub. -->
-![tests](https://github.com/OWNER/REPO/actions/workflows/tests.yml/badge.svg)
+![tests](https://github.com/tuaititecnologia/krayin-rest-api/actions/workflows/tests.yml/badge.svg)
 
 Krayin REST API is a medium to use the features of the core Krayin System. By using Krayin REST API, you can integrate your application to serve the default content of Krayin.
 
