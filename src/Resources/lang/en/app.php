@@ -15,6 +15,7 @@ return [
         'internal-server-error' => 'An unexpected error occurred on the server. Please try again later.',
         'nothing-to-delete'     => 'No matching records were found to delete.',
         'method-not-allowed'    => 'The HTTP method used is not allowed for this endpoint.',
+        'tag-not-attached'      => 'The tag is not attached to this record.',
     ],
 
     'products' => [

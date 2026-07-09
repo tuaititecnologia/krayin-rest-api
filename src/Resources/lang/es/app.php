@@ -15,6 +15,7 @@ return [
         'internal-server-error' => 'Ocurrió un error inesperado en el servidor. Por favor, inténtalo de nuevo más tarde.',
         'nothing-to-delete'     => 'No se encontraron registros coincidentes para eliminar.',
         'method-not-allowed'    => 'El método HTTP utilizado no está permitido para este endpoint.',
+        'tag-not-attached'      => 'La etiqueta no está asociada a este registro.',
     ],
 
     'products' => [

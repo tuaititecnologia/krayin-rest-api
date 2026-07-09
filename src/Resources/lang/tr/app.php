@@ -15,6 +15,7 @@ return [
         'internal-server-error' => 'Sunucuda beklenmeyen bir hata oluştu. Lütfen daha sonra tekrar deneyin.',
         'nothing-to-delete'     => 'Silinecek eşleşen kayıt bulunamadı.',
         'method-not-allowed'    => 'Kullanılan HTTP yöntemi bu uç nokta için izin verilmiyor.',
+        'tag-not-attached'      => 'Etiket bu kayda ekli değil.',
     ],
 
     'products' => [
