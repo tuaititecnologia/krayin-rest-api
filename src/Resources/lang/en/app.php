@@ -168,6 +168,7 @@ return [
             'updated-success'      => 'Pipeline updated successfully.',
             'delete-success'       => 'Pipeline deleted successfully.',
             'default-delete-error' => 'Default pipeline can not be deleted.',
+            'delete-failed'        => 'Pipeline delete failed.',
         ],
 
         'sources' => [

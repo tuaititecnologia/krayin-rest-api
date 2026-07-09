@@ -2,6 +2,7 @@
 
 namespace Webkul\RestApi\Http\Controllers\V1\Setting;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Event;
 use Webkul\Admin\Http\Requests\PipelineForm;
@@ -33,7 +34,7 @@ class PipelineController extends Controller
      */
     public function show(int $id): PipelineResource
     {
-        $resource = $this->pipelineRepository->find($id);
+        $resource = $this->findOrFailResource($this->pipelineRepository, $id);
 
         return new PipelineResource($resource);
     }
@@ -43,8 +44,13 @@ class PipelineController extends Controller
      */
     public function store(PipelineForm $request): JsonResource
     {
+        $this->validate(request(), [
+            'name'        => 'required|unique:lead_pipelines,name',
+            'rotten_days' => 'sometimes|nullable|integer|min:0',
+        ]);
+
         $request->merge([
-            'is_default' => request()->has('is_default') ? 1 : 0,
+            'is_default' => request()->boolean('is_default') ? 1 : 0,
         ]);
 
         Event::dispatch('settings.pipeline.create.before');
@@ -64,8 +70,15 @@ class PipelineController extends Controller
      */
     public function update(PipelineForm $request, int $id): JsonResource
     {
+        $this->findOrFailResource($this->pipelineRepository, $id);
+
+        $this->validate(request(), [
+            'name'        => 'required|unique:lead_pipelines,name,'.$id,
+            'rotten_days' => 'sometimes|nullable|integer|min:0',
+        ]);
+
         $request->merge([
-            'is_default' => request()->has('is_default') ? 1 : 0,
+            'is_default' => request()->boolean('is_default') ? 1 : 0,
         ]);
 
         Event::dispatch('settings.pipeline.update.before', $id);
@@ -83,22 +96,23 @@ class PipelineController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(int $id): JsonResource
+    public function destroy(int $id): JsonResource|JsonResponse
     {
         $pipeline = $this->pipelineRepository->findOrFail($id);
 
         if ($pipeline->is_default) {
-            return new JsonResource([
-                'message' => trans('rest-api::app.settings.pipelines.default-delete-error'),
-            ], 400);
-        } else {
-            $defaultPipeline = $this->pipelineRepository->getDefaultPipeline();
-
-            $pipeline->leads()->update([
-                'lead_pipeline_id'       => $defaultPipeline->id,
-                'lead_pipeline_stage_id' => $defaultPipeline->stages()->first()->id,
-            ]);
+            return $this->respondError(
+                trans('rest-api::app.settings.pipelines.default-delete-error'),
+                400,
+            );
         }
+
+        $defaultPipeline = $this->pipelineRepository->getDefaultPipeline();
+
+        $pipeline->leads()->update([
+            'lead_pipeline_id'       => $defaultPipeline->id,
+            'lead_pipeline_stage_id' => $defaultPipeline->stages()->first()->id,
+        ]);
 
         try {
             Event::dispatch('settings.pipeline.delete.before', $id);
@@ -107,13 +121,12 @@ class PipelineController extends Controller
 
             Event::dispatch('settings.pipeline.delete.after', $id);
 
-            return new JsonResource([
-                'message' => trans('rest-api::app.settings.pipelines.delete-success'),
-            ]);
+            return $this->respondSuccess(trans('rest-api::app.settings.pipelines.delete-success'));
         } catch (\Exception $exception) {
-            return new JsonResource([
-                'message' => trans('rest-api::app.settings.pipelines.delete-failed'),
-            ], 500);
+            return $this->respondError(
+                trans('rest-api::app.settings.pipelines.delete-failed'),
+                500,
+            );
         }
     }
 }

@@ -168,6 +168,7 @@ return [
             'updated-success'      => 'Pipeline başarıyla güncellendi.',
             'delete-success'       => 'Pipeline başarıyla silindi.',
             'default-delete-error' => 'Varsayılan pipeline silinemez.',
+            'delete-failed'        => 'Pipeline silme işlemi başarısız oldu.',
         ],
 
         'sources' => [

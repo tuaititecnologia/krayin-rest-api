@@ -168,6 +168,7 @@ return [
             'updated-success'      => 'تم تحديث المسار بنجاح.',
             'delete-success'       => 'تم حذف المسار بنجاح.',
             'default-delete-error' => 'لا يمكن حذف المسار الافتراضي.',
+            'delete-failed'        => 'فشل حذف المسار.',
         ],
 
         'sources' => [

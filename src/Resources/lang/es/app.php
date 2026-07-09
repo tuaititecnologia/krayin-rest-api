@@ -168,6 +168,7 @@ return [
             'updated-success'      => 'Pipeline actualizado con éxito.',
             'delete-success'       => 'Pipeline eliminado con éxito.',
             'default-delete-error' => 'No se puede eliminar el pipeline predeterminado.',
+            'delete-failed'        => 'No se pudo eliminar el pipeline.',
         ],
 
         'sources' => [

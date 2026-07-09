@@ -168,6 +168,7 @@ return [
             'updated-success'      => 'پایپ‌لاین با موفقیت به‌روزرسانی شد.',
             'delete-success'       => 'پایپ‌لاین با موفقیت حذف شد.',
             'default-delete-error' => 'پایپ‌لاین پیش‌فرض قابل حذف نیست.',
+            'delete-failed'        => 'حذف پایپ‌لاین ناموفق بود.',
         ],
 
         'sources' => [
