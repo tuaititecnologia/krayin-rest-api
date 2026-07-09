@@ -32,6 +32,7 @@ return [
         'delete-success'  => 'Potansiyel müşteri başarıyla silindi.',
         'delete-failed'   => 'Potansiyel müşteri silme işlemi başarısız oldu.',
         'no-valid-files'  => 'Geçerli dosya bulunamadı.',
+        'product-remove-success' => 'Ürün, olası müşteriden başarıyla kaldırıldı.',
 
         'view' => [
             'tags' => [

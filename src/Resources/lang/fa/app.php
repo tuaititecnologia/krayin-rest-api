@@ -32,6 +32,7 @@ return [
         'delete-success'  => 'سرنخ با موفقیت حذف شد.',
         'delete-failed'   => 'حذف سرنخ با شکست مواجه شد.',
         'no-valid-files'  => 'فایل معتبری یافت نشد.',
+        'product-remove-success' => 'محصول با موفقیت از سرنخ حذف شد.',
 
         'view' => [
             'tags' => [

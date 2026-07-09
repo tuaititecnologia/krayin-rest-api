@@ -32,6 +32,7 @@ return [
         'delete-success'  => 'Lead eliminado con éxito.',
         'delete-failed'   => 'La eliminación del lead falló.',
         'no-valid-files'  => 'No se encontraron archivos válidos.',
+        'product-remove-success' => 'Producto eliminado del lead con éxito.',
 
         'view' => [
             'tags' => [

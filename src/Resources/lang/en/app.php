@@ -32,6 +32,7 @@ return [
         'delete-success'  => 'Lead deleted successfully.',
         'delete-failed'   => 'Lead delete failed.',
         'no-valid-files'  => 'No valid files found.',
+        'product-remove-success' => 'Product removed from the lead successfully.',
 
         'view' => [
             'tags' => [

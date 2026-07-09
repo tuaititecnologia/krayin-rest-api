@@ -3,6 +3,7 @@
 namespace Webkul\RestApi\Http\Controllers\V1\Lead;
 
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Event;
@@ -85,7 +86,7 @@ class LeadController extends Controller
 
         $data['status'] = 1;
 
-        if ($data['lead_pipeline_stage_id']) {
+        if (! empty($data['lead_pipeline_stage_id'])) {
             $stage = $this->stageRepository->findOrFail($data['lead_pipeline_stage_id']);
 
             $data['lead_pipeline_id'] = $stage->lead_pipeline_id;
@@ -122,7 +123,7 @@ class LeadController extends Controller
 
         $data = $request->all();
 
-        if ($data['lead_pipeline_stage_id']) {
+        if (! empty($data['lead_pipeline_stage_id'])) {
             $stage = $this->stageRepository->findOrFail($data['lead_pipeline_stage_id']);
 
             $data['lead_pipeline_id'] = $stage->lead_pipeline_id;
@@ -469,12 +470,10 @@ class LeadController extends Controller
             Event::dispatch('lead.product.delete.after', $id);
 
             return new JsonResource([
-                'message' => trans('rest-api::app.leads.delete-success'),
+                'message' => trans('rest-api::app.leads.product-remove-success'),
             ]);
         } catch (\Exception $exception) {
-            return new JsonResource([
-                'message' => trans('rest-api::app.leads.delete-failed'),
-            ]);
+            return $this->respondError(trans('rest-api::app.leads.delete-failed'), 500);
         }
     }
 
@@ -523,11 +522,15 @@ class LeadController extends Controller
     /**
      * Mass update the leads.
      */
-    public function massUpdate(MassUpdateRequest $massUpdateRequest): JsonResource
+    public function massUpdate(MassUpdateRequest $massUpdateRequest): JsonResource|JsonResponse
     {
-        $leadIds = $massUpdateRequest->input('indices', []);
+        $this->validate(request(), [
+            'value' => 'required|exists:lead_pipeline_stages,id',
+        ]);
 
-        foreach ($leadIds as $leadId) {
+        $count = 0;
+
+        foreach ($massUpdateRequest->input('indices', []) as $leadId) {
             $lead = $this->leadRepository->find($leadId);
 
             if (! $lead) {
@@ -538,38 +541,34 @@ class LeadController extends Controller
 
             $lead->update(['lead_pipeline_stage_id' => $massUpdateRequest->input('value')]);
 
-            Event::dispatch('lead.update.before', $leadId);
+            Event::dispatch('lead.update.after', $leadId);
+
+            $count++;
         }
 
-        return new JsonResource([
-            'message' => trans('rest-api::app.leads.updated-success'),
-        ]);
+        if (! $count) {
+            return $this->respondError(trans('rest-api::app.common.nothing-to-delete'), 404);
+        }
+
+        return $this->respondSuccess(trans('rest-api::app.leads.updated-success'));
     }
 
     /**
      * Mass delete the leads.
      */
-    public function massDestroy(MassDestroyRequest $massDestroyRequest): JsonResource
+    public function massDestroy(MassDestroyRequest $massDestroyRequest): JsonResource|JsonResponse
     {
-        $leadIds = $massDestroyRequest->input('indices', []);
+        $result = $this->massDestroyResources(
+            $this->leadRepository,
+            $massDestroyRequest->input('indices', []),
+            'lead',
+        );
 
-        foreach ($leadIds as $leadId) {
-            $lead = $this->leadRepository->find($leadId);
-
-            if (! $lead) {
-                continue;
-            }
-
-            Event::dispatch('lead.delete.before', $leadId);
-
-            $lead->delete();
-
-            Event::dispatch('lead.delete.after', $leadId);
+        if ($result['deleted'] === 0) {
+            return $this->respondError(trans('rest-api::app.common.nothing-to-delete'), 404);
         }
 
-        return new JsonResource([
-            'message' => trans('rest-api::app.leads.delete-success'),
-        ]);
+        return $this->respondSuccess(trans('rest-api::app.leads.delete-success'));
     }
 
     /**

@@ -32,6 +32,7 @@ return [
         'delete-success'  => 'تم حذف العميل المحتمل بنجاح.',
         'delete-failed'   => 'فشل حذف العميل المحتمل.',
         'no-valid-files'  => 'لم يتم العثور على ملفات صالحة.',
+        'product-remove-success' => 'تمت إزالة المنتج من العميل المحتمل بنجاح.',
 
         'view' => [
             'tags' => [
