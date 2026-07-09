@@ -58,7 +58,7 @@ class ActivityController extends Controller
     public function store()
     {
         $this->validate(request(), [
-            'type'          => 'required',
+            'type'          => 'required|in:call,meeting,lunch,note,file,email',
             'comment'       => 'required_if:type,note',
             'schedule_from' => 'required_unless:type,note,file',
             'schedule_to'   => 'required_unless:type,note,file',
@@ -112,6 +112,13 @@ class ActivityController extends Controller
      */
     public function update($id)
     {
+        $this->findOrFailResource($this->activityRepository, $id);
+
+        $this->validate(request(), [
+            'type'    => 'sometimes|required|in:call,meeting,lunch,note,file,email',
+            'lead_id' => 'nullable|exists:leads,id',
+        ]);
+
         Event::dispatch('activity.update.before', $id);
 
         $activity = $this->activityRepository->update(request()->all(), $id);
@@ -144,7 +151,7 @@ class ActivityController extends Controller
 
         return new JsonResponse([
             'data'    => new ActivityResource($activity),
-            'message' => trans('admin::app.activities.update-success', ['type' => trans('admin::app.activities.'.$activity->type)]),
+            'message' => trans('rest-api::app.activities.update-success'),
         ]);
     }
 
@@ -169,22 +176,18 @@ class ActivityController extends Controller
      */
     public function destroy($id)
     {
-        $activity = $this->activityRepository->findOrFail($id);
+        $this->activityRepository->findOrFail($id);
 
         try {
             Event::dispatch('activity.delete.before', $id);
 
-            $activity?->delete($id);
+            $this->activityRepository->delete($id);
 
             Event::dispatch('activity.delete.after', $id);
 
-            return response([
-                'message' => trans('admin::app.activities.destroy-success', ['type' => trans('admin::app.activities.'.$activity->type)]),
-            ]);
+            return $this->respondSuccess(trans('rest-api::app.activities.delete-success'));
         } catch (\Exception $exception) {
-            return response([
-                'message' => trans('admin::app.activities.destroy-failed', ['type' => trans('admin::app.activities.'.$activity->type)]),
-            ], 500);
+            return $this->respondError(trans('rest-api::app.activities.delete-failed'), 500);
         }
     }
 
@@ -195,9 +198,13 @@ class ActivityController extends Controller
      */
     public function massUpdate(MassUpdateRequest $massUpdateRequest)
     {
-        $activityIds = $massUpdateRequest->input('indices', []);
+        $this->validate(request(), [
+            'value' => 'required|boolean',
+        ]);
 
-        foreach ($activityIds as $activityId) {
+        $count = 0;
+
+        foreach ($massUpdateRequest->input('indices', []) as $activityId) {
             $activity = $this->activityRepository->find($activityId);
 
             if (! $activity) {
@@ -211,11 +218,15 @@ class ActivityController extends Controller
             ]);
 
             Event::dispatch('activity.update.after', $activity);
+
+            $count++;
         }
 
-        return new JsonResponse([
-            'message' => trans('admin::app.activities.mass-update-success'),
-        ]);
+        if (! $count) {
+            return $this->respondError(trans('rest-api::app.common.nothing-to-delete'), 404);
+        }
+
+        return $this->respondSuccess(trans('rest-api::app.activities.update-success'));
     }
 
     /**
@@ -225,24 +236,16 @@ class ActivityController extends Controller
      */
     public function massDestroy(MassDestroyRequest $massDestroyRequest)
     {
-        $activityIds = $massDestroyRequest->input('indices', []);
+        $result = $this->massDestroyResources(
+            $this->activityRepository,
+            $massDestroyRequest->input('indices', []),
+            'activity',
+        );
 
-        foreach ($activityIds as $activityId) {
-            $activity = $this->activityRepository->find($activityId);
-
-            if (! $activity) {
-                continue;
-            }
-
-            Event::dispatch('activity.delete.before', $activityId);
-
-            $activity->delete($activityId);
-
-            Event::dispatch('activity.delete.after', $activityId);
+        if ($result['deleted'] === 0) {
+            return $this->respondError(trans('rest-api::app.common.nothing-to-delete'), 404);
         }
 
-        return new JsonResponse([
-            'message' => trans('admin::app.activities.destroy-success'),
-        ]);
+        return $this->respondSuccess(trans('rest-api::app.activities.delete-success'));
     }
 }

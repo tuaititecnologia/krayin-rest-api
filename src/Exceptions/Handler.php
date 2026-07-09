@@ -2,12 +2,15 @@
 
 namespace Webkul\RestApi\Exceptions;
 
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use PDOException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -26,20 +29,56 @@ class Handler extends ExceptionHandler
          * Always answer authentication failures with a JSON 401 for this API.
          */
         $this->renderable(function (AuthenticationException $e, Request $request) {
-            return response()->json([
-                'message' => $this->jsonErrorMessages()[401],
-            ], 401);
+            return $this->jsonError(401);
         });
 
         /**
-         * Render custom error responses when not running in debug mode.
+         * Validation failures always render as a JSON 422 with the field errors,
+         * regardless of debug mode.
+         */
+        $this->renderable(function (ValidationException $e, Request $request) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors'  => $e->errors(),
+            ], $e->status ?: 422);
+        });
+
+        /**
+         * Authorization failures render as a JSON 403.
+         */
+        $this->renderable(function (AuthorizationException $e, Request $request) {
+            return $this->jsonError(403);
+        });
+
+        /**
+         * Missing records (model binding or explicit findOrFail) and unknown
+         * routes render as a friendly JSON 404 even in debug mode, so API
+         * consumers never receive an HTML stack trace for a not-found resource.
+         */
+        $this->renderable(function (ModelNotFoundException $e, Request $request) {
+            return $this->jsonError(404);
+        });
+
+        $this->renderable(function (NotFoundHttpException $e, Request $request) {
+            return $this->jsonError(404);
+        });
+
+        /**
+         * Any remaining exception: keep the framework's default (stack trace)
+         * while debugging web/admin routes, but api/* requests always get a
+         * clean JSON response — an API consumer should never receive an HTML
+         * debug page or trace, regardless of APP_DEBUG.
          */
         $this->renderable(function (Throwable $e, Request $request) {
-            if (config('app.debug')) {
+            if (
+                config('app.debug')
+                && ! $request->is('api/*')
+            ) {
                 return null;
             }
 
-            return $this->renderCustomResponse($e, $request);
+            return $this->renderCustomResponse($e, $request)
+                ?? ($request->is('api/*') ? $this->jsonError(500) : null);
         });
     }
 
@@ -56,6 +95,19 @@ class Handler extends ExceptionHandler
             404 => trans('rest-api::app.common.resource-not-found'),
             500 => trans('rest-api::app.common.internal-server-error'),
         ];
+    }
+
+    /**
+     * Build a JSON error response for a given status code.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    protected function jsonError(int $statusCode)
+    {
+        return response()->json([
+            'message' => $this->jsonErrorMessages()[$statusCode]
+                ?? trans('rest-api::app.common.internal-server-error'),
+        ], $statusCode);
     }
 
     /**
@@ -92,10 +144,7 @@ class Handler extends ExceptionHandler
     protected function response(Request $request, int $statusCode)
     {
         if ($request->expectsJson()) {
-            return response()->json([
-                'message' => $this->jsonErrorMessages()[$statusCode]
-                    ?? trans('admin::app.common.something-went-wrong'),
-            ], $statusCode);
+            return $this->jsonError($statusCode);
         }
 
         return response()->view("admin::errors.{$statusCode}", [], $statusCode);

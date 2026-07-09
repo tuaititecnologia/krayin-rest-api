@@ -1,6 +1,50 @@
 # CHANGELOG
 This changelog consists of the bug & security fixes and new features being included in the releases listed below.
 
+## **Unreleased** - *Upstream issue backlog sweep*
+
+Addresses the recurring bug patterns reported against `krayin/rest-api`. Shared
+infrastructure fixes each pattern once for the ~40 controllers:
+
+* Added a `ForceJsonResponse` middleware to the `api` group so every error is
+  rendered as JSON instead of an HTML error page.
+* Hardened the exception handler to render `ModelNotFoundException` /
+  `NotFoundHttpException` as a JSON 404, `ValidationException` as 422 (with field
+  errors) and `AuthorizationException` as 403 — even in debug mode — and dropped
+  the host `admin::` fallback message key.
+* Added CRUD helpers to the base V1 controller (`findOrFailResource`,
+  `respondSuccess` / `respondError`, `destroyResource`, `massDestroyResources`)
+  so `show`/`update`/`destroy` return a proper 404, `destroy` sends the real HTTP
+  status (previously swallowed by `new JsonResource([...], 500)`), and mass-delete
+  reports the real deleted count instead of a blanket success.
+* `allResources()` now validates sort/filter columns against the table, returning
+  422 for an unknown sort column and ignoring unknown filters instead of a 500.
+* Per-module fixes across Settings (attributes, users, groups, roles, pipelines,
+  webhooks, sources, types, email-templates, web-forms, tags, warehouses,
+  locations, marketing, imports), Contacts, Quotes, Mails, Activities, Products,
+  Leads and Configuration: `find` → `findOrFail`, missing validation (enums,
+  negative numbers, unique names, boolean flags, FK `exists`, country/locale),
+  corrected success/error messages, added missing translation keys in all five
+  locales, and `DELETE` support on `mass-destroy` where the wrong verb was used.
+* Removed the dead singular route files (`setting-routes.php`,
+  `activity-routes.php`) and added numeric `{id}` route constraints.
+* Added a migration that backfills the `expires_at` column on
+  `personal_access_tokens` for installs upgraded from a pre-Sanctum-4 schema
+  (Krayin's original 2.1.x scaffold never had it); safe no-op otherwise.
+* Registered `Authenticate::redirectUsing()` so a guest hitting any `api/*`
+  route always gets a clean JSON 401 instead of crashing with
+  `Route [login] not defined` (Krayin's admin panel has no named `login`
+  route reachable from the API guard). The exception handler's catch-all also
+  now always renders JSON for `api/*` requests, even in debug mode, so no
+  unmapped exception can leak an HTML debug trace to an API client.
+* Fixed `Webkul\Admin\AdminServiceProvider` silently disabling this package's
+  JSON error contract: it also rebinds `ExceptionHandler::class` (for its own
+  error views), and since provider boot order between packages isn't
+  something we control, whichever provider's `boot()` ran last used to win.
+  The binding is now deferred to the application's `booted()` callback queue,
+  which always fires after every provider's `boot()` has completed, so our
+  handler wins regardless of provider order.
+
 ## **v3.0.0 (8th of July 2026)** - *Laravel 12 support*
 
 * Added Laravel 12 support.

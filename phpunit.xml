@@ -12,6 +12,15 @@
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
         </testsuite>
+        <!--
+            Black-box integration tests against a REAL running Krayin instance.
+            Inert (every test self-skips) unless KRAYIN_BASE_URL is set, so the
+            default run stays green without a CRM. Run in isolation with the
+            "test-integration" composer script.
+        -->
+        <testsuite name="Integration">
+            <directory>tests/Integration</directory>
+        </testsuite>
     </testsuites>
     <source>
         <include>
