@@ -23,12 +23,14 @@
         "laravel/sanctum": "^4.0"
     },
     "require-dev": {
+        "guzzlehttp/guzzle": "^7.8",
         "orchestra/testbench": "^10.0",
         "phpunit/phpunit": "^11.5"
     },
     "scripts": {
         "test": "phpunit",
-        "test-coverage": "phpunit --coverage-text"
+        "test-coverage": "phpunit --coverage-text",
+        "test-integration": "phpunit --testsuite Integration"
     },
     "extra": {
         "laravel": {

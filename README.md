@@ -114,8 +114,22 @@ composer test-coverage                       # text coverage report (needs Xdebu
 
 * `tests/Unit/` — pure classes exercised in isolation (form requests, resource transformers, the install command's metadata).
 * `tests/Feature/` — the package booted in a container: provider wiring, route table, middleware, exception rendering, and Swagger generation.
-* `tests/TestCase.php` — the shared Testbench base; it registers only `RestApiServiceProvider` + Sanctum, keeping the suite portable and CI-friendly.
+* `tests/Integration/` — **black-box HTTP tests against a REAL running Krayin** (see below): the actual `api/v1/*` endpoints driven with a Sanctum token, through real controllers, repositories and Krayin attribute validation.
+* `tests/TestCase.php` — the shared Testbench base; it registers only `RestApiServiceProvider` + Sanctum, keeping the Unit/Feature suites portable and CI-friendly.
 
-Because the tests never dispatch to controllers that depend on Krayin domain packages, they run anywhere in seconds. Full end-to-end controller tests against a live Krayin install are the natural next layer to add on top of this foundation.
+Because the Unit/Feature tests never dispatch to controllers that depend on Krayin domain packages, they run anywhere in seconds.
 
-CI runs the suite on PHP 8.2, 8.3, and 8.4 via GitHub Actions (`.github/workflows/tests.yml`).
+### Integration tests (against a live Krayin)
+
+The `Integration` suite covers what a package-only harness cannot: the plugin actually working on top of the CRM — login, real CRUD over leads / persons / organizations, and the error contracts this fork hardened (401 for guests, 404 for missing ids, 422 for invalid input, graceful mass-destroy). It is **inert unless pointed at an instance**, so the default run stays green without a CRM:
+
+~~~shell
+KRAYIN_BASE_URL=https://your-krayin.example.com \
+KRAYIN_API_EMAIL=admin@example.com \
+KRAYIN_API_PASSWORD=secret \
+  composer test-integration
+~~~
+
+With `KRAYIN_BASE_URL` unset, every integration test self-skips. Tests are self-cleaning (records they create are deleted on teardown).
+
+CI runs the Unit/Feature suite on PHP 8.2, 8.3 and 8.4 (`.github/workflows/tests.yml`), and a separate job (`.github/workflows/integration.yml`) provisions a throwaway Krayin, installs this plugin on top of it and runs the Integration suite end-to-end.
