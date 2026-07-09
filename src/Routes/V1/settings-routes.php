@@ -106,7 +106,7 @@ Route::group([
 
         Route::post('mass-update', 'massUpdate');
 
-        Route::post('mass-destroy', 'massDestroy');
+        Route::match(['delete', 'post'], 'mass-destroy', 'massDestroy');
     });
 
     /**
@@ -168,7 +168,7 @@ Route::group([
 
         Route::delete('{id}', 'destroy');
 
-        Route::post('mass-destroy', 'massDestroy');
+        Route::match(['delete', 'post'], 'mass-destroy', 'massDestroy');
 
         Route::get('lookup/{lookup?}', 'lookup');
 
