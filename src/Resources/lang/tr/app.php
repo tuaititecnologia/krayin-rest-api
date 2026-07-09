@@ -13,6 +13,8 @@ return [
         'forbidden-error'       => 'Bu kaynağa erişim izniniz yok.',
         'unauthenticated'       => 'Kimliğiniz doğrulanmadı. Devam etmek için lütfen giriş yapın.',
         'internal-server-error' => 'Sunucuda beklenmeyen bir hata oluştu. Lütfen daha sonra tekrar deneyin.',
+        'nothing-to-delete'     => 'Silinecek eşleşen kayıt bulunamadı.',
+        'method-not-allowed'    => 'Kullanılan HTTP yöntemi bu uç nokta için izin verilmiyor.',
     ],
 
     'products' => [

@@ -56,7 +56,7 @@ class RestApiServiceProvider extends ServiceProvider
     protected function mapApiRoutes()
     {
         Route::prefix('api')
-            ->middleware('api')
+            ->middleware(['api', \Webkul\RestApi\Http\Middleware\ForceJsonResponse::class])
             ->group(__DIR__.'/../Routes/api.php');
     }
 

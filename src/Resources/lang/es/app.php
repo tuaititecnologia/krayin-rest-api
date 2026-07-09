@@ -13,6 +13,8 @@ return [
         'forbidden-error'       => 'No tienes permiso para acceder a este recurso.',
         'unauthenticated'       => 'No estás autenticado. Por favor, inicia sesión para continuar.',
         'internal-server-error' => 'Ocurrió un error inesperado en el servidor. Por favor, inténtalo de nuevo más tarde.',
+        'nothing-to-delete'     => 'No se encontraron registros coincidentes para eliminar.',
+        'method-not-allowed'    => 'El método HTTP utilizado no está permitido para este endpoint.',
     ],
 
     'products' => [
