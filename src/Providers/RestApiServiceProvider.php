@@ -37,9 +37,29 @@ class RestApiServiceProvider extends ServiceProvider
             __DIR__.'/../Config/l5-swagger.php' => config_path('l5-swagger.php'),
         ], 'krayin-rest-api-swagger');
 
-        $this->app->singleton(ExceptionHandler::class, Handler::class);
+        $this->bindExceptionHandler();
 
         $this->configureGuestAuthRedirect();
+    }
+
+    /**
+     * Bind our exception handler as the application's active one.
+     *
+     * Krayin's own `Webkul\Admin\AdminServiceProvider` also rebinds
+     * `ExceptionHandler::class` (so its own error views work), and provider
+     * boot order between packages isn't something we control — whichever
+     * provider's `boot()` runs last wins the container binding. Deferring our
+     * call to the application's `booted()` callback queue guarantees ours
+     * runs strictly after every provider's `boot()` has finished, so our JSON
+     * error contract for `api/*` always wins regardless of provider order.
+     *
+     * @return void
+     */
+    protected function bindExceptionHandler()
+    {
+        $this->app->booted(function () {
+            $this->app->singleton(ExceptionHandler::class, Handler::class);
+        });
     }
 
     /**

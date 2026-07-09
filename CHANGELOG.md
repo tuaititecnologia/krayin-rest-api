@@ -37,6 +37,13 @@ infrastructure fixes each pattern once for the ~40 controllers:
   route reachable from the API guard). The exception handler's catch-all also
   now always renders JSON for `api/*` requests, even in debug mode, so no
   unmapped exception can leak an HTML debug trace to an API client.
+* Fixed `Webkul\Admin\AdminServiceProvider` silently disabling this package's
+  JSON error contract: it also rebinds `ExceptionHandler::class` (for its own
+  error views), and since provider boot order between packages isn't
+  something we control, whichever provider's `boot()` ran last used to win.
+  The binding is now deferred to the application's `booted()` callback queue,
+  which always fires after every provider's `boot()` has completed, so our
+  handler wins regardless of provider order.
 
 ## **v3.0.0 (8th of July 2026)** - *Laravel 12 support*
 
