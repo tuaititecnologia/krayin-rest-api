@@ -46,7 +46,7 @@ class PersonController extends Controller
      */
     public function show(int $id)
     {
-        $resource = $this->personRepository->find($id);
+        $resource = $this->findOrFailResource($this->personRepository, $id);
 
         return new PersonResource($resource);
     }
@@ -98,6 +98,8 @@ class PersonController extends Controller
      */
     public function update(AttributeForm $request, $id)
     {
+        $this->findOrFailResource($this->personRepository, $id);
+
         Event::dispatch('contacts.person.update.before', $id);
 
         $person = $this->personRepository->update($this->sanitizeRequestedPersonData(), $id);
@@ -118,21 +120,13 @@ class PersonController extends Controller
      */
     public function destroy($id)
     {
-        try {
-            Event::dispatch('contacts.person.delete.before', $id);
-
-            $this->personRepository->delete($id);
-
-            Event::dispatch('contacts.person.delete.after', $id);
-
-            return new JsonResponse([
-                'message' => trans('rest-api::app.contacts.persons.delete-success'),
-            ]);
-        } catch (\Exception $exception) {
-            return new JsonResponse([
-                'message' => trans('rest-api::app.contacts.persons.delete-success'),
-            ], 500);
-        }
+        return $this->destroyResource(
+            $this->personRepository,
+            $id,
+            'rest-api::app.contacts.persons.delete-success',
+            'contacts.person',
+            'rest-api::app.contacts.persons.delete-failed',
+        );
     }
 
     /**
@@ -142,25 +136,17 @@ class PersonController extends Controller
      */
     public function massDestroy(MassDestroyRequest $massDestroyRequest)
     {
-        $personIds = $massDestroyRequest->input('indices', []);
+        $result = $this->massDestroyResources(
+            $this->personRepository,
+            $massDestroyRequest->input('indices', []),
+            'contact.person',
+        );
 
-        foreach ($personIds as $personId) {
-            $person = $this->personRepository->find($personId);
-
-            if (! $person) {
-                continue;
-            }
-
-            Event::dispatch('contact.person.delete.before', $personId);
-
-            $person->delete($personId);
-
-            Event::dispatch('contact.person.delete.after', $personId);
+        if ($result['deleted'] === 0) {
+            return $this->respondError(trans('rest-api::app.common.nothing-to-delete'), 404);
         }
 
-        return new JsonResponse([
-            'message' => trans('rest-api::app.contacts.persons.delete-success'),
-        ]);
+        return $this->respondSuccess(trans('rest-api::app.contacts.persons.delete-success'));
     }
 
     /**
