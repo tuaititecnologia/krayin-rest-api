@@ -36,12 +36,12 @@ Add it to the `repositories` section of your Krayin application's `composer.json
 ### Step 2 — Require the package from the console
 
 ~~~shell
-composer require krayin/rest-api:dev-main
+composer require krayin/rest-api:^3.0
 ~~~
 
 Composer resolves `krayin/rest-api` from the VCS repository above (it takes
-precedence over Packagist) and installs the Laravel 12 line from the `main` branch.
-To pin an exact revision instead of tracking the branch, use `dev-main#<commit-sha>`.
+precedence over Packagist) and installs the latest `v3.x` release (Laravel 12).
+To track the development branch instead of a tagged release, require `dev-main`.
 
 ### Add the following options to your .env file
 
