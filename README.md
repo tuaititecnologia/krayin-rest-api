@@ -72,6 +72,24 @@ install command (`{APP_URL}/api/documentation`).
 
 * You can check the [L5-Swagger](https://github.com/DarkaOnLine/L5-Swagger) guidelines too regarding the configuration the API documentation.
 
+### Known gotchas on an existing Krayin install
+
+* **`personal_access_tokens` missing `expires_at`** — Sanctum 4.x reads/writes
+  an `expires_at` column that didn't exist in the older Sanctum 2.x migration.
+  Installs upgraded from Krayin's original 2.1.x scaffold are missing it,
+  which breaks token issuance/validation. This package ships a migration that
+  backfills the column automatically (a no-op if it's already there) — just
+  run `php artisan migrate` after requiring the package.
+* **Guest API requests must not redirect to `login`** — Laravel's `Authenticate`
+  middleware can be configured (by the host app, or by a callback registered
+  via `Authenticate::redirectUsing()`) to redirect unauthenticated users to a
+  named `login` route. Krayin's admin panel has no such route reachable from
+  the API guard, so this fork registers its own `redirectUsing()` callback
+  that always returns `null` for any `api/*` request — guests get a clean
+  JSON `401` instead of a `Route [login] not defined` crash. This is
+  registered automatically in `RestApiServiceProvider::boot()`; no action
+  needed on your end.
+
 ## 3. Testing
 
 This package ships a fast, self-contained test suite built on [Orchestra Testbench](https://packages.tools/testbench). It boots the package inside a minimal Laravel 12 app — **no full Krayin CRM or database is required** — and verifies the surface the package owns and that the Laravel 12 upgrade touched: service-provider wiring, route registration, the `sanctum.admin` middleware, the custom exception handler's JSON contract, the OpenAPI attribute docs, the mass-action form requests, and the API resource transformers.
