@@ -16,6 +16,9 @@ return [
         'nothing-to-delete'     => 'No matching records were found to delete.',
         'method-not-allowed'    => 'The HTTP method used is not allowed for this endpoint.',
         'tag-not-attached'      => 'The tag is not attached to this record.',
+        'current-password-mismatch' => 'The current password you entered is incorrect.',
+        'permission-denied'         => 'You do not have permission to change these fields.',
+        'account-update-success'    => 'Account updated successfully.',
     ],
 
     'products' => [

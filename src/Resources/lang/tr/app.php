@@ -16,6 +16,9 @@ return [
         'nothing-to-delete'     => 'Silinecek eşleşen kayıt bulunamadı.',
         'method-not-allowed'    => 'Kullanılan HTTP yöntemi bu uç nokta için izin verilmiyor.',
         'tag-not-attached'      => 'Etiket bu kayda ekli değil.',
+        'current-password-mismatch' => 'Girdiğiniz mevcut şifre yanlış.',
+        'permission-denied'         => 'Bu alanları değiştirme izniniz yok.',
+        'account-update-success'    => 'Hesap başarıyla güncellendi.',
     ],
 
     'products' => [

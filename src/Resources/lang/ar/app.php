@@ -16,6 +16,9 @@ return [
         'nothing-to-delete'     => 'لم يتم العثور على سجلات مطابقة لحذفها.',
         'method-not-allowed'    => 'طريقة HTTP المستخدمة غير مسموح بها لهذا المسار.',
         'tag-not-attached'      => 'العلامة غير مرتبطة بهذا السجل.',
+        'current-password-mismatch' => 'كلمة المرور الحالية التي أدخلتها غير صحيحة.',
+        'permission-denied'         => 'ليس لديك إذن لتغيير هذه الحقول.',
+        'account-update-success'    => 'تم تحديث الحساب بنجاح.',
     ],
 
     'products' => [

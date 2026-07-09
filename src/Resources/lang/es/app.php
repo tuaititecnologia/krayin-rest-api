@@ -16,6 +16,9 @@ return [
         'nothing-to-delete'     => 'No se encontraron registros coincidentes para eliminar.',
         'method-not-allowed'    => 'El método HTTP utilizado no está permitido para este endpoint.',
         'tag-not-attached'      => 'La etiqueta no está asociada a este registro.',
+        'current-password-mismatch' => 'La contraseña actual que ingresaste es incorrecta.',
+        'permission-denied'         => 'No tienes permiso para cambiar estos campos.',
+        'account-update-success'    => 'Cuenta actualizada con éxito.',
     ],
 
     'products' => [

@@ -16,6 +16,9 @@ return [
         'nothing-to-delete'     => 'هیچ رکورد منطبقی برای حذف یافت نشد.',
         'method-not-allowed'    => 'روش HTTP استفاده‌شده برای این مسیر مجاز نیست.',
         'tag-not-attached'      => 'برچسب به این رکورد متصل نیست.',
+        'current-password-mismatch' => 'رمز عبور فعلی که وارد کرده‌اید نادرست است.',
+        'permission-denied'         => 'شما اجازه تغییر این فیلدها را ندارید.',
+        'account-update-success'    => 'حساب با موفقیت به‌روزرسانی شد.',
     ],
 
     'products' => [
