@@ -4,7 +4,7 @@
 
 Krayin REST API is a medium to use the features of the core Krayin System. By using Krayin REST API, you can integrate your application to serve the default content of Krayin.
 
-> **This is a community-maintained fork** modernizing the package for **Laravel 12**. It ships a test suite and CI so the project can be safely built on and evolved, while staying clean enough to merge back upstream. See [Testing](#4-testing) and [CHANGELOG.md](CHANGELOG.md).
+> **This is a community-maintained fork** modernizing the package for **Laravel 12**. It ships a test suite and CI so the project can be safely built on and evolved, while staying clean enough to merge back upstream. See [Testing](#3-testing) and [CHANGELOG.md](CHANGELOG.md).
 
 ## 1. Requirements
 
@@ -14,13 +14,34 @@ Krayin REST API is a medium to use the features of the core Krayin System. By us
 
 ## 2. Installation
 
-### To install Krayin REST API from your console
+> This fork keeps the original `krayin/rest-api` package name so it stays a drop-in
+> replacement (and can be merged upstream), but it is **not published on Packagist**.
+> Installing it therefore means pointing Composer at this Git repository — running a
+> plain `composer require krayin/rest-api` would pull the abandoned, Laravel 11
+> version from Packagist instead.
 
-#### For the latest version of rest api
+### Step 1 — Register this repository in your Krayin project
+
+Add it to the `repositories` section of your Krayin application's `composer.json`:
+
+~~~json
+"repositories": [
+    {
+        "type": "vcs",
+        "url": "https://github.com/tuaititecnologia/krayin-rest-api"
+    }
+]
+~~~
+
+### Step 2 — Require the package from the console
 
 ~~~shell
-composer require krayin/rest-api
+composer require krayin/rest-api:dev-main
 ~~~
+
+Composer resolves `krayin/rest-api` from the VCS repository above (it takes
+precedence over Packagist) and installs the Laravel 12 line from the `main` branch.
+To pin an exact revision instead of tracking the branch, use `dev-main#<commit-sha>`.
 
 ### Add the following options to your .env file
 
@@ -48,7 +69,7 @@ http://localhost/public/api/admin/documentation
 
 * You can check the [L5-Swagger](https://github.com/DarkaOnLine/L5-Swagger) guidelines too regarding the configuration the API documentation.
 
-## 4. Testing
+## 3. Testing
 
 This package ships a fast, self-contained test suite built on [Orchestra Testbench](https://packages.tools/testbench). It boots the package inside a minimal Laravel 12 app — **no full Krayin CRM or database is required** — and verifies the surface the package owns and that the Laravel 12 upgrade touched: service-provider wiring, route registration, the `sanctum.admin` middleware, the custom exception handler's JSON contract, the OpenAPI attribute docs, the mass-action form requests, and the API resource transformers.
 
