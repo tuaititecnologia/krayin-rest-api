@@ -60,6 +60,9 @@ return [
         'delete-success' => 'E-posta başarıyla silindi.',
         'delete-failed'  => 'E-posta silme işlemi başarısız oldu.',
         'saved-to-draft' => 'E-posta taslak olarak kaydedildi.',
+        'trash-success'       => 'E-posta çöp kutusuna başarıyla taşındı.',
+        'mass-update-success' => 'Seçili e-postalar başarıyla güncellendi.',
+        'destroy-success'     => 'Seçili e-postalar başarıyla silindi.',
 
         'view' => [
             'tags' => [

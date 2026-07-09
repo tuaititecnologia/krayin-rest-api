@@ -60,6 +60,9 @@ return [
         'delete-success' => 'Email deleted successfully.',
         'delete-failed'  => 'Email delete failed.',
         'saved-to-draft' => 'Email saved to draft.',
+        'trash-success'       => 'Email moved to trash successfully.',
+        'mass-update-success' => 'Selected emails updated successfully.',
+        'destroy-success'     => 'Selected emails deleted successfully.',
 
         'view' => [
             'tags' => [

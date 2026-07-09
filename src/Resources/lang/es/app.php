@@ -60,6 +60,9 @@ return [
         'delete-success' => 'Correo electrónico eliminado con éxito.',
         'delete-failed'  => 'La eliminación del correo electrónico falló.',
         'saved-to-draft' => 'Correo electrónico guardado como borrador.',
+        'trash-success'       => 'Correo electrónico movido a la papelera con éxito.',
+        'mass-update-success' => 'Correos seleccionados actualizados con éxito.',
+        'destroy-success'     => 'Correos seleccionados eliminados con éxito.',
 
         'view' => [
             'tags' => [
