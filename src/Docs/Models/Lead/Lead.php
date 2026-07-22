@@ -6,7 +6,8 @@ use OpenApi\Attributes as OA;
 
 #[OA\Schema(
     title: 'Lead',
-    description: 'Lead Model',
+    description: 'Lead Model. Any user-defined custom fields are returned as additional top-level properties keyed by their attribute code.',
+    additionalProperties: true,
 )]
 class Lead
 {
