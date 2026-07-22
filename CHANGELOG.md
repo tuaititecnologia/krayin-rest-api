@@ -1,6 +1,27 @@
 # CHANGELOG
 This changelog consists of the bug & security fixes and new features being included in the releases listed below.
 
+## **v3.2.0 (22nd of July 2026)** - *Published on Packagist*
+
+Distribution change only — no `/v1/` API behavior changes. The fork is now an
+installable package (`composer require tuaititecnologia/krayin-rest-api`) instead
+of a manual VCS-repository install.
+
+* Renamed the Composer package from `krayin/rest-api` to
+  `tuaititecnologia/krayin-rest-api` and published it on Packagist. The
+  `Webkul\RestApi` namespace and the auto-discovered `RestApiServiceProvider`
+  are unchanged, and the package declares `replace: krayin/rest-api`, so it stays
+  a **drop-in replacement**: no application code changes are required.
+* Added a `LICENSE` file (MIT), preserving attribution to the original
+  `krayin/rest-api` authors (Webkul) alongside the fork's copyright, and filled
+  in Packagist metadata (`description`, `keywords`, `homepage`, `support`).
+* Fixed the L5-Swagger `annotations` path, which was hardcoded to
+  `vendor/krayin/rest-api/src/Docs`. It now points at the package's real install
+  directory (`vendor/tuaititecnologia/krayin-rest-api/src/Docs`) so the API
+  documentation still generates after the rename.
+* Updated the README install instructions from the VCS-repository workaround to a
+  plain `composer require`, with a migration note for existing installs.
+
 ## **v3.1.0 (21st of July 2026)** - *Participants, custom fields & pipeline PUT*
 
 Three REST-layer bug fixes plus the matching OpenAPI docs. All changes are

@@ -1,11 +1,13 @@
 # Krayin REST API
 
-![tests](https://github.com/tuaititecnologia/krayin-rest-api/actions/workflows/tests.yml/badge.svg)
-![integration](https://github.com/tuaititecnologia/krayin-rest-api/actions/workflows/integration.yml/badge.svg)
+[![tests](https://github.com/tuaititecnologia/krayin-rest-api/actions/workflows/tests.yml/badge.svg)](https://github.com/tuaititecnologia/krayin-rest-api/actions/workflows/tests.yml)
+[![integration](https://github.com/tuaititecnologia/krayin-rest-api/actions/workflows/integration.yml/badge.svg)](https://github.com/tuaititecnologia/krayin-rest-api/actions/workflows/integration.yml)
+[![Latest Version](https://img.shields.io/packagist/v/tuaititecnologia/krayin-rest-api.svg)](https://packagist.org/packages/tuaititecnologia/krayin-rest-api)
+[![Total Downloads](https://img.shields.io/packagist/dt/tuaititecnologia/krayin-rest-api.svg)](https://packagist.org/packages/tuaititecnologia/krayin-rest-api)
 
 Krayin REST API is a medium to use the features of the core Krayin System. By using Krayin REST API, you can integrate your application to serve the default content of Krayin.
 
-> **This is a community-maintained fork** modernizing the package for **Laravel 12**. It ships a test suite and CI so the project can be safely built on and evolved, while staying clean enough to merge back upstream. See [Usage](#3-usage), [Testing](#4-testing) and [CHANGELOG.md](CHANGELOG.md).
+> **This is a community-maintained fork of [`krayin/rest-api`](https://github.com/krayin/rest-api)** modernizing the package for **Laravel 12**, with fixes across dozens of endpoints, a test suite and CI so the project can be safely built on and evolved. It is published on Packagist as **`tuaititecnologia/krayin-rest-api`** and is a **drop-in replacement**: it keeps the original `Webkul\RestApi` namespace and declares `replace: krayin/rest-api`, so no application code changes are needed. See [Installation](#2-installation), [Usage](#3-usage), [Testing](#4-testing) and [CHANGELOG.md](CHANGELOG.md).
 
 ## 1. Requirements
 
@@ -15,34 +17,25 @@ Krayin REST API is a medium to use the features of the core Krayin System. By us
 
 ## 2. Installation
 
-> This fork keeps the original `krayin/rest-api` package name so it stays a drop-in
-> replacement (and can be merged upstream), but it is **not published on Packagist**.
-> Installing it therefore means pointing Composer at this Git repository — running a
-> plain `composer require krayin/rest-api` would pull the abandoned, Laravel 11
-> version from Packagist instead.
-
-### Step 1 — Register this repository in your Krayin project
-
-Add it to the `repositories` section of your Krayin application's `composer.json`:
-
-~~~json
-"repositories": [
-    {
-        "type": "vcs",
-        "url": "https://github.com/tuaititecnologia/krayin-rest-api"
-    }
-]
-~~~
-
-### Step 2 — Require the package from the console
+This fork is published on Packagist, so a single command installs it:
 
 ~~~shell
-composer require krayin/rest-api:^3.0
+composer require tuaititecnologia/krayin-rest-api
 ~~~
 
-Composer resolves `krayin/rest-api` from the VCS repository above (it takes
-precedence over Packagist) and installs the latest `v3.x` release (Laravel 12).
-To track the development branch instead of a tagged release, require `dev-main`.
+Because the package declares `replace: krayin/rest-api` and keeps the original
+`Webkul\RestApi` namespace, it is a **drop-in replacement**: any project (or
+package) that expects `krayin/rest-api` is satisfied by this fork, and no
+application code changes are required. To track the development branch instead
+of a tagged release, require `dev-main`.
+
+> **Migrating from the original `krayin/rest-api`?** Remove it first so the two
+> don't conflict, then require the fork:
+>
+> ~~~shell
+> composer remove krayin/rest-api
+> composer require tuaititecnologia/krayin-rest-api
+> ~~~
 
 ### Add the following options to your .env file
 
