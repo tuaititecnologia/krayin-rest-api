@@ -113,6 +113,31 @@ abstract class IntegrationTestCase extends TestCase
      */
     protected function request(string $method, string $path, ?array $data = null, bool $auth = true): array
     {
+        $result = $this->sendRequest($method, $path, $data, $auth);
+
+        /**
+         * Krayin's login revokes ALL of a user's existing tokens
+         * (`$user->tokens()->delete()`), so the process-wide cached bearer token
+         * gets invalidated the moment any test performs a fresh login. When an
+         * authenticated call comes back 401, transparently drop the cached token,
+         * re-login and retry once — this makes the suite immune to test ordering
+         * (a genuinely unauthorized call still fails on the retry).
+         */
+        if ($auth && $result['status'] === 401) {
+            self::$token = null;
+
+            $result = $this->sendRequest($method, $path, $data, $auth);
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $data
+     * @return array{status:int, json:array<mixed>}
+     */
+    private function sendRequest(string $method, string $path, ?array $data, bool $auth): array
+    {
         $options = [];
 
         if ($data !== null) {
