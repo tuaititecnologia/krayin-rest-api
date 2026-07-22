@@ -76,4 +76,32 @@ class LeadsIntegrationTest extends IntegrationTestCase
         $this->assertLessThan(500, $response['status']);
         $this->assertHumanMessage($response['json']);
     }
+
+    /**
+     * Bug 2: a lead's user-defined custom fields must be returned by the API the
+     * way the panel shows them — both in the list (eager-loaded) and the single
+     * GET. Gated on a known custom attribute code (set KRAYIN_CUSTOM_LEAD_ATTR to
+     * a user-defined attribute code on leads), mirroring the suite's env-gating.
+     */
+    public function test_get_lead_exposes_user_defined_custom_field_keys(): void
+    {
+        $attribute = getenv('KRAYIN_CUSTOM_LEAD_ATTR') ?: null;
+
+        if (! $attribute) {
+            $this->markTestSkipped('Set KRAYIN_CUSTOM_LEAD_ATTR to a user-defined lead attribute code to run this.');
+        }
+
+        $list = $this->get('api/v1/leads');
+        $leadId = $list['json']['data'][0]['id'] ?? null;
+
+        if (! $leadId) {
+            $this->markTestSkipped('No leads exist to check custom-field exposure.');
+        }
+
+        $this->assertArrayHasKey($attribute, $list['json']['data'][0], 'List did not expose custom field '.$attribute);
+
+        $show = $this->get("api/v1/leads/{$leadId}");
+        $this->assertSame(200, $show['status']);
+        $this->assertArrayHasKey($attribute, $show['json']['data'], 'Show did not expose custom field '.$attribute);
+    }
 }

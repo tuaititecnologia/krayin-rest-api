@@ -60,7 +60,7 @@ class LeadController extends Controller
      */
     public function index(): JsonResource
     {
-        $leads = $this->allResources($this->leadRepository);
+        $leads = $this->allResources($this->leadRepository, ['attribute_values']);
 
         return LeadResource::collection($leads);
     }

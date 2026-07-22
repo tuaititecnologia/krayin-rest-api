@@ -111,4 +111,63 @@ class ContactsIntegrationTest extends IntegrationTestCase
         $this->assertSame(404, $response['status']);
         $this->assertHumanMessage($response['json']);
     }
+
+    /**
+     * Bug 2: a user-defined custom field must be returned by the API the way the
+     * panel shows it — in the single GET and in the list (eager-loaded). This is
+     * fully self-provisioning (it creates its own user-defined attribute and an
+     * organization that sets it, then cleans both up), so it runs unattended in
+     * the integration CI without any seed data. Organizations exercise the exact
+     * same shared `InteractsWithCustomAttributes` mechanism used by leads/persons.
+     */
+    public function test_organization_user_defined_custom_field_round_trips(): void
+    {
+        // 1. Create a user-defined text attribute on `organizations`.
+        $code = 'it_cf_'.uniqid();
+
+        $attribute = $this->post('api/v1/settings/attributes', [
+            'code'        => $code,
+            'name'        => 'IT Custom Field',
+            'type'        => 'text',
+            'entity_type' => 'organizations',
+            'is_required' => 0,
+        ]);
+
+        $this->assertContains($attribute['status'], [200, 201], 'Attribute create should succeed: '.json_encode($attribute));
+        $attributeId = $attribute['json']['data']['id'] ?? null;
+        $this->assertNotNull($attributeId, 'Created attribute has no id: '.json_encode($attribute));
+        $this->deleteOnTearDown("api/v1/settings/attributes/{$attributeId}");
+
+        // 2. Create an organization that sets the custom field.
+        $value = $this->unique('cf_');
+        $created = $this->post('api/v1/contacts/organizations', [
+            'name' => $this->unique('Org '),
+            $code  => $value,
+        ]);
+
+        $this->assertContains($created['status'], [200, 201], 'Org create should succeed: '.json_encode($created));
+        $organizationId = $created['json']['data']['id'] ?? null;
+        $this->assertNotNull($organizationId, 'Created organization has no id: '.json_encode($created));
+        $this->deleteOnTearDown("api/v1/contacts/organizations/{$organizationId}");
+
+        // 3. The single GET returns the custom field with its value.
+        $show = $this->get("api/v1/contacts/organizations/{$organizationId}");
+        $this->assertSame(200, $show['status']);
+        $this->assertArrayHasKey($code, $show['json']['data'], 'Show did not expose custom field '.$code);
+        $this->assertSame($value, $show['json']['data'][$code]);
+
+        // 4. So does the list endpoint (proving the eager-load path).
+        $list = $this->get('api/v1/contacts/organizations?limit=50');
+        $match = null;
+        foreach ($list['json']['data'] ?? [] as $row) {
+            if ((int) ($row['id'] ?? 0) === (int) $organizationId) {
+                $match = $row;
+                break;
+            }
+        }
+
+        $this->assertNotNull($match, 'Created organization not found in list.');
+        $this->assertArrayHasKey($code, $match, 'List did not expose custom field '.$code);
+        $this->assertSame($value, $match[$code]);
+    }
 }

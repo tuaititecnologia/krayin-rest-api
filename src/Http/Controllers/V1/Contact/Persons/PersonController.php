@@ -34,7 +34,7 @@ class PersonController extends Controller
      */
     public function index()
     {
-        $persons = $this->allResources($this->personRepository);
+        $persons = $this->allResources($this->personRepository, ['attribute_values', 'organization.attribute_values']);
 
         return PersonResource::collection($persons);
     }
