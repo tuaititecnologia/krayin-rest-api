@@ -189,7 +189,7 @@ class ActivityController
                                         description: 'List of user IDs'
                                     ),
                                 ],
-                                description: 'Participants object containing users'
+                                description: 'Participants. Either this {users, persons} object, or a flat array of user IDs (e.g. [1,2]) which are linked as users. Passing an empty value clears all participants. IDs are validated to exist.'
                             ),
                         ]
                     )
@@ -396,7 +396,7 @@ class ActivityController
                                     description: 'List of user IDs'
                                 ),
                             ],
-                            description: 'Participants object containing users'
+                            description: 'Participants. Either this {users, persons} object, or a flat array of user IDs (e.g. [1,2]) which are linked as users. Passing an empty value clears all participants. IDs are validated to exist.'
                         ),
                     ]
                 )

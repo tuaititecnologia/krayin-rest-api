@@ -41,9 +41,13 @@ class Controller extends RestApiController
      *
      * @return Illuminate\Pagination\LengthAwarePaginator|\Illuminate\Database\Eloquent\Collection
      */
-    protected function allResources(Repository $repository)
+    protected function allResources(Repository $repository, array $with = [])
     {
         $query = $repository->query();
+
+        if ($with) {
+            $query = $query->with($with);
+        }
 
         $table   = $query->getModel()->getTable();
         $columns = Schema::getColumnListing($table);

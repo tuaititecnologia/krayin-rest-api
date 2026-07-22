@@ -6,7 +6,8 @@ use OpenApi\Attributes as OA;
 
 #[OA\Schema(
     title: 'Person',
-    description: 'Person Model',
+    description: 'Person Model. Any user-defined custom fields are returned as additional top-level properties keyed by their attribute code.',
+    additionalProperties: true,
 )]
 class Person
 {

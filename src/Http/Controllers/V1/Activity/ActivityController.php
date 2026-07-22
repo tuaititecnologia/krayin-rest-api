@@ -5,6 +5,7 @@ namespace Webkul\RestApi\Http\Controllers\V1\Activity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Webkul\Activity\Repositories\ActivityRepository;
 use Webkul\Activity\Repositories\FileRepository;
 use Webkul\Lead\Repositories\LeadRepository;
@@ -65,6 +66,14 @@ class ActivityController extends Controller
             'file'          => 'required_if:type,file',
         ]);
 
+        /**
+         * Normalize `participants` into the nested `{users, persons}` shape the
+         * core ActivityRepository expects, so a flat `participants:[1,2]` (user
+         * ids) actually links participants. Must run before the overlap check
+         * below, which also relies on the nested shape.
+         */
+        $this->normalizeParticipantsInput();
+
         if (request('type') === 'meeting') {
             /**
              * Check if meeting is overlapping with other meetings.
@@ -99,7 +108,7 @@ class ActivityController extends Controller
         Event::dispatch('activity.create.after', $activity);
 
         return new JsonResponse([
-            'data'    => new ActivityResource($activity->refresh()),
+            'data'    => new ActivityResource($activity->load('participants', 'files', 'user')),
             'message' => trans('rest-api::app.activities.create-success'),
         ]);
     }
@@ -119,25 +128,18 @@ class ActivityController extends Controller
             'lead_id' => 'nullable|exists:leads,id',
         ]);
 
+        /**
+         * Normalize `participants` into the nested `{users, persons}` shape so a
+         * flat `participants:[1,2]` links participants. The core repository's
+         * update() already deletes + recreates participants from this shape, so
+         * we no longer sync them here (that duplicate loop also read the wrong,
+         * flat keys and did nothing).
+         */
+        $this->normalizeParticipantsInput();
+
         Event::dispatch('activity.update.before', $id);
 
         $activity = $this->activityRepository->update(request()->all(), $id);
-
-        if (request()->has('participants')) {
-            $activity->participants()->delete();
-
-            $participantUserIds = request()->input('participants.users', []);
-
-            foreach ($participantUserIds as $userId) {
-                $activity->participants()->create(['user_id' => $userId]);
-            }
-
-            $participantPersonIds = request()->input('participants.persons', []);
-
-            foreach ($participantPersonIds as $personId) {
-                $activity->participants()->create(['person_id' => $personId]);
-            }
-        }
 
         if ($leadId = request()->input('lead_id')) {
             $lead = $this->leadRepository->find($leadId);
@@ -150,9 +152,70 @@ class ActivityController extends Controller
         Event::dispatch('activity.update.after', $activity);
 
         return new JsonResponse([
-            'data'    => new ActivityResource($activity),
+            'data'    => new ActivityResource($activity->load('participants', 'files', 'user')),
             'message' => trans('rest-api::app.activities.update-success'),
         ]);
+    }
+
+    /**
+     * Normalize and validate the request's `participants` input in place.
+     *
+     * Accepts either the nested shape the Krayin core consumes
+     * (`participants[users][]` / `participants[persons][]`, sent by the panel
+     * and multipart form-data) or a flat array of user ids (`participants:[1,2]`,
+     * as REST clients naturally send). A flat array is treated as user ids;
+     * persons require the nested shape. The normalized value is merged back into
+     * the request so the core ActivityRepository create()/update() can sync it,
+     * and the overlap check receives the shape it expects.
+     *
+     * @return void
+     */
+    protected function normalizeParticipantsInput()
+    {
+        if (! request()->has('participants')) {
+            return;
+        }
+
+        $participants = $this->normalizeParticipants(request()->input('participants'));
+
+        Validator::make($participants, [
+            'users.*'   => 'integer|distinct|exists:users,id',
+            'persons.*' => 'integer|distinct|exists:persons,id',
+        ])->validate();
+
+        request()->merge(['participants' => $participants]);
+    }
+
+    /**
+     * Reshape a raw `participants` value into the nested `{users, persons}` form.
+     *
+     * A value already carrying `users`/`persons` keys is kept as-is (each side
+     * defaulting to an empty list); anything else is treated as a flat list of
+     * user ids. Blank/null entries are dropped and the rest are cast to ints.
+     * Pure (no request/DB access) so it can be unit-tested directly.
+     *
+     * @param  mixed  $raw
+     * @return array{users: array<int, int>, persons: array<int, int>}
+     */
+    protected function normalizeParticipants($raw): array
+    {
+        if (is_array($raw) && (array_key_exists('users', $raw) || array_key_exists('persons', $raw))) {
+            $users   = $raw['users'] ?? [];
+            $persons = $raw['persons'] ?? [];
+        } else {
+            $users   = $raw ?? [];
+            $persons = [];
+        }
+
+        $normalize = fn ($ids) => array_values(array_map(
+            'intval',
+            array_filter((array) $ids, fn ($value) => $value !== '' && $value !== null)
+        ));
+
+        return [
+            'users'   => $normalize($users),
+            'persons' => $normalize($persons),
+        ];
     }
 
     /**

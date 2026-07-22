@@ -30,7 +30,7 @@ class OrganizationController extends Controller
      */
     public function index()
     {
-        $organizations = $this->allResources($this->organizationRepository);
+        $organizations = $this->allResources($this->organizationRepository, ['attribute_values']);
 
         return OrganizationResource::collection($organizations);
     }

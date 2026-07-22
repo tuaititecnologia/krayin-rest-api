@@ -74,7 +74,7 @@ class PipelineController
             required: true,
             description: 'Pipeline details',
             content: new OA\JsonContent(
-                required: ['name', 'rotten_days', 'is_default', 'stages'],
+                required: ['name', 'stages'],
                 properties: [
                     new OA\Property(
                         property: 'name',
@@ -96,50 +96,18 @@ class PipelineController
                     ),
                     new OA\Property(
                         property: 'stages',
-                        type: 'object',
-                        description: 'Stages of the pipeline',
-                        properties: [
-                            new OA\Property(
-                                property: 'stage_1',
-                                type: 'object',
-                                properties: [
-                                    new OA\Property(property: 'code', type: 'string', example: 'new'),
-                                    new OA\Property(property: 'name', type: 'string', example: 'New'),
-                                    new OA\Property(property: 'sort_order', type: 'integer', example: 1),
-                                    new OA\Property(property: 'probability', type: 'integer', example: 100),
-                                ]
-                            ),
-                            new OA\Property(
-                                property: 'stage_2',
-                                type: 'object',
-                                properties: [
-                                    new OA\Property(property: 'code', type: 'string', example: 'test'),
-                                    new OA\Property(property: 'name', type: 'string', example: 'test'),
-                                    new OA\Property(property: 'sort_order', type: 'integer', example: 2),
-                                    new OA\Property(property: 'probability', type: 'integer', example: 100),
-                                ]
-                            ),
-                            new OA\Property(
-                                property: 'stage_99',
-                                type: 'object',
-                                properties: [
-                                    new OA\Property(property: 'code', type: 'string', example: 'won'),
-                                    new OA\Property(property: 'name', type: 'string', example: 'Won'),
-                                    new OA\Property(property: 'sort_order', type: 'integer', example: 3),
-                                    new OA\Property(property: 'probability', type: 'integer', example: 100),
-                                ]
-                            ),
-                            new OA\Property(
-                                property: 'stage_100',
-                                type: 'object',
-                                properties: [
-                                    new OA\Property(property: 'code', type: 'string', example: 'lost'),
-                                    new OA\Property(property: 'name', type: 'string', example: 'Lost'),
-                                    new OA\Property(property: 'sort_order', type: 'integer', example: 4),
-                                    new OA\Property(property: 'probability', type: 'integer', example: 0),
-                                ]
-                            ),
-                        ]
+                        type: 'array',
+                        description: 'Ordered list of stages to create (send at least one).',
+                        items: new OA\Items(
+                            type: 'object',
+                            required: ['name', 'code'],
+                            properties: [
+                                new OA\Property(property: 'name', type: 'string', description: 'Stage name', example: 'New'),
+                                new OA\Property(property: 'code', type: 'string', description: 'Stage code (unique within the pipeline)', example: 'new'),
+                                new OA\Property(property: 'sort_order', type: 'integer', description: 'Display order (defaults to the array index)', example: 1),
+                                new OA\Property(property: 'probability', type: 'integer', description: 'Win probability 0-100 (defaults to 100)', example: 100),
+                            ]
+                        )
                     ),
                 ]
             )
@@ -185,7 +153,7 @@ class PipelineController
             required: true,
             description: 'Pipeline details',
             content: new OA\JsonContent(
-                required: ['name', 'rotten_days', 'is_default', 'stages'],
+                required: ['name', 'stages'],
                 properties: [
                     new OA\Property(
                         property: 'name',
@@ -207,50 +175,19 @@ class PipelineController
                     ),
                     new OA\Property(
                         property: 'stages',
-                        type: 'object',
-                        description: 'Stages of the pipeline',
-                        properties: [
-                            new OA\Property(
-                                property: '7',
-                                type: 'object',
-                                properties: [
-                                    new OA\Property(property: 'code', type: 'string', example: 'new'),
-                                    new OA\Property(property: 'name', type: 'string', example: 'New'),
-                                    new OA\Property(property: 'sort_order', type: 'integer', example: 1),
-                                    new OA\Property(property: 'probability', type: 'integer', example: 100),
-                                ]
-                            ),
-                            new OA\Property(
-                                property: '8',
-                                type: 'object',
-                                properties: [
-                                    new OA\Property(property: 'code', type: 'string', example: 'test'),
-                                    new OA\Property(property: 'name', type: 'string', example: 'test'),
-                                    new OA\Property(property: 'sort_order', type: 'integer', example: 2),
-                                    new OA\Property(property: 'probability', type: 'integer', example: 100),
-                                ]
-                            ),
-                            new OA\Property(
-                                property: '9',
-                                type: 'object',
-                                properties: [
-                                    new OA\Property(property: 'code', type: 'string', example: 'won'),
-                                    new OA\Property(property: 'name', type: 'string', example: 'Won'),
-                                    new OA\Property(property: 'sort_order', type: 'integer', example: 3),
-                                    new OA\Property(property: 'probability', type: 'integer', example: 100),
-                                ]
-                            ),
-                            new OA\Property(
-                                property: '10',
-                                type: 'object',
-                                properties: [
-                                    new OA\Property(property: 'code', type: 'string', example: 'lost'),
-                                    new OA\Property(property: 'name', type: 'string', example: 'Lost'),
-                                    new OA\Property(property: 'sort_order', type: 'integer', example: 4),
-                                    new OA\Property(property: 'probability', type: 'integer', example: 0),
-                                ]
-                            ),
-                        ]
+                        type: 'array',
+                        description: 'The desired set of stages (sync). Include a stage\'s "id" to update it in place; omit "id" to create a new stage; any existing stage not present in the list is deleted. Send at least one.',
+                        items: new OA\Items(
+                            type: 'object',
+                            required: ['name', 'code'],
+                            properties: [
+                                new OA\Property(property: 'id', type: 'integer', description: 'Existing stage id to update in place; omit to create a new stage', example: 7),
+                                new OA\Property(property: 'name', type: 'string', description: 'Stage name', example: 'New'),
+                                new OA\Property(property: 'code', type: 'string', description: 'Stage code (unique within the pipeline)', example: 'new'),
+                                new OA\Property(property: 'sort_order', type: 'integer', description: 'Display order (defaults to the array index)', example: 1),
+                                new OA\Property(property: 'probability', type: 'integer', description: 'Win probability 0-100 (defaults to 100)', example: 100),
+                            ]
+                        )
                     ),
                 ]
             )
