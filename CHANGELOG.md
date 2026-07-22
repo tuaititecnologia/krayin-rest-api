@@ -44,6 +44,36 @@ infrastructure fixes each pattern once for the ~40 controllers:
   The binding is now deferred to the application's `booted()` callback queue,
   which always fires after every provider's `boot()` has completed, so our
   handler wins regardless of provider order.
+* Fixed activity `participants` never being linked on `POST`/`PUT /activities`.
+  The core `ActivityRepository` only understands the nested
+  `participants[users][]` / `participants[persons][]` shape, so a flat
+  `participants:[1,2]` (the natural REST shape) silently linked nobody, and
+  `store()` did not handle participants at all. The controller now normalizes
+  either shape into the nested form before delegating to the core repository
+  (a flat array is treated as user ids; persons still require the nested shape),
+  validates that each id exists (`exists:users,id` / `exists:persons,id`), and
+  drops the duplicate participant loop `update()` carried (it read the wrong,
+  flat keys). This also fixes the meeting-overlap check, which previously
+  received a flat array and skipped participant filtering.
+* Custom (EAV) fields are now returned by the Lead, Organization and Person
+  resources. They were saved correctly but never read back — the resources
+  exposed only a fixed whitelist. A new `InteractsWithCustomAttributes` concern
+  merges each entity's user-defined attribute values (`code => value`) at the
+  top level, exactly as the panel shows them, using Krayin's public
+  `getCustomAttributes()` / `getCustomAttributeValue()`. The whitelist is merged
+  last so existing response keys never change, and the list endpoints eager-load
+  `attribute_values` to avoid N+1.
+* Fixed `PUT settings/pipelines/{id}` returning a 500 and leaving a partial write
+  (new stages piled on top of the old ones). The controller now validates
+  `stages` (required, non-empty), normalizes the incoming list into the
+  associative shape the core `PipelineRepository` expects (existing stages keyed
+  by id → update, new stages keyed `stage_<n>` → create, omitted stages → delete
+  = sync), rejects a stage id belonging to another pipeline, and wraps the write
+  in a transaction so a mid-write failure rolls back instead of half-updating.
+  Also stopped type-hinting the core `PipelineForm`, whose create-vs-update
+  detection keys off `request('id')` (a route parameter, not body input, over
+  REST) and mis-applied the create ruleset on updates. The stage request contract
+  is now a list of `{id?, name, code, probability?, sort_order?}`.
 
 ## **v3.0.0 (8th of July 2026)** - *Laravel 12 support*
 
