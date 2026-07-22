@@ -85,6 +85,30 @@ class ActivitiesIntegrationTest extends IntegrationTestCase
         $this->assertSame($newTitle, $show['json']['data']['title'] ?? null);
     }
 
+    public function test_malformed_participants_are_rejected_cleanly_never_500(): void
+    {
+        $garbageInputs = [
+            ['participants' => 'fruta'],                    // a plain string
+            ['participants' => ['users' => 'fruta']],       // nested but not a list
+            ['participants' => [999999999]],                // a non-existent user id
+            ['participants' => ['users' => [999999999]]],   // non-existent, nested
+        ];
+
+        foreach ($garbageInputs as $garbage) {
+            $response = $this->post('api/v1/activities', $this->activityPayload($garbage));
+
+            // Whatever we throw at it, it must answer with a clean client error
+            // (422), never a 500.
+            $this->assertLessThan(500, $response['status'], 'Garbage participants must not 500: '.json_encode([$garbage, $response]));
+            $this->assertSame(422, $response['status'], 'Garbage participants should be a 422: '.json_encode([$garbage, $response]));
+
+            // Clean up in the unlikely event one slipped through as a create.
+            if (isset($response['json']['data']['id'])) {
+                $this->deleteOnTearDown('api/v1/activities/'.$response['json']['data']['id']);
+            }
+        }
+    }
+
     // -- Helpers ------------------------------------------------------------
 
     /**

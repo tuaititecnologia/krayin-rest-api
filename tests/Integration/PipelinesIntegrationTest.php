@@ -88,6 +88,42 @@ class PipelinesIntegrationTest extends IntegrationTestCase
         $this->assertSame($originalName, $show['json']['data']['name'] ?? null);
     }
 
+    public function test_stages_of_the_wrong_type_are_rejected_not_500(): void
+    {
+        $response = $this->post('api/v1/settings/pipelines', [
+            'name'   => $this->unique('Pipe '),
+            'stages' => 'fruta',
+        ]);
+
+        $this->assertSame(422, $response['status'], 'Non-array stages must be a 422, not a 500: '.json_encode($response));
+        $this->assertHumanMessage($response['json']);
+    }
+
+    public function test_stage_without_name_or_code_is_rejected(): void
+    {
+        $response = $this->post('api/v1/settings/pipelines', [
+            'name'   => $this->unique('Pipe '),
+            'stages' => [['sort_order' => 1]], // missing name + code
+        ]);
+
+        $this->assertSame(422, $response['status'], 'Incomplete stage must be a 422: '.json_encode($response));
+        $this->assertHumanMessage($response['json']);
+    }
+
+    public function test_duplicate_stage_codes_are_rejected(): void
+    {
+        $response = $this->post('api/v1/settings/pipelines', [
+            'name'   => $this->unique('Pipe '),
+            'stages' => [
+                ['name' => 'A', 'code' => 'dup'],
+                ['name' => 'B', 'code' => 'dup'],
+            ],
+        ]);
+
+        $this->assertSame(422, $response['status'], 'Duplicate stage codes must be a 422: '.json_encode($response));
+        $this->assertHumanMessage($response['json']);
+    }
+
     // -- Helpers ------------------------------------------------------------
 
     /**
