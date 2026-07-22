@@ -49,8 +49,8 @@ jobs:
         working-directory: krayin-app
         run: |
           composer config repositories.local-rest-api path ../plugin
-          composer require "krayin/rest-api:@dev" --no-interaction --no-update
-          composer update krayin/rest-api --with-all-dependencies --no-interaction
+          composer require "tuaititecnologia/krayin-rest-api:@dev" --no-interaction --no-update
+          composer update tuaititecnologia/krayin-rest-api --with-all-dependencies --no-interaction
 
       - name: Configure environment
         working-directory: krayin-app

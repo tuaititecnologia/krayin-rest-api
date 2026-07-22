@@ -1,12 +1,36 @@
 {
-    "name": "krayin/rest-api",
+    "name": "tuaititecnologia/krayin-rest-api",
+    "description": "Community-maintained fork of krayin/rest-api: the Krayin CRM REST API modernized for Laravel 12, with fixes across lead, contact, activity, mail, product and settings endpoints, plus a full test suite and CI.",
+    "keywords": [
+        "krayin",
+        "crm",
+        "rest-api",
+        "api",
+        "laravel",
+        "sanctum",
+        "webkul"
+    ],
     "license": "MIT",
+    "homepage": "https://github.com/tuaititecnologia/krayin-rest-api",
     "authors": [
         {
             "name": "Devansh Bawari",
-            "email": "devansh.bawari419@webkul.com"
+            "email": "devansh.bawari419@webkul.com",
+            "role": "Original author"
+        },
+        {
+            "name": "Alejandro Sanchez",
+            "email": "sanchezalejandroismael@gmail.com",
+            "role": "Fork maintainer"
         }
     ],
+    "support": {
+        "issues": "https://github.com/tuaititecnologia/krayin-rest-api/issues",
+        "source": "https://github.com/tuaititecnologia/krayin-rest-api"
+    },
+    "replace": {
+        "krayin/rest-api": "self.version"
+    },
     "autoload": {
         "psr-4": {
             "Webkul\\RestApi\\": "src/"

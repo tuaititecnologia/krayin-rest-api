@@ -41,7 +41,7 @@ return [
                  * Absolute paths to directory containing the swagger annotations are stored.
                 */
                 'annotations' => [
-                    base_path('vendor/krayin/rest-api/src/Docs'),
+                    base_path('vendor/tuaititecnologia/krayin-rest-api/src/Docs'),
                 ],
 
             ],
